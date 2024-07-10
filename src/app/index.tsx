@@ -1,22 +1,25 @@
 import { useState } from "react";
-import { View, Text, Image, Keyboard } from "react-native";
+import { View, Text, Image, Keyboard, Alert } from "react-native";
 import {
   MapPin,
   Calendar as IconCalendar,
   Settings2,
   UserRoundPlus,
   ArrowRight,
+  AtSign,
 } from "lucide-react-native";
 import { DateData } from "react-native-calendars";
+import dayjs from "dayjs";
 
 import { colors } from "@/styles/colors";
 import { calendarUtils, DatesSelected } from "@/utils/calendarUtils";
+import { validateInput } from "@/utils/validateInput";
 
 import { Input } from "@/components/input";
 import { Button } from "@/components/button";
 import { Modal } from "@/components/modal";
 import { Calendar } from "@/components/calendar";
-import dayjs from "dayjs";
+import { GuestEmail } from "@/components/email";
 
 enum StepForm {
   TRIP_DETAILS = 1,
@@ -33,8 +36,10 @@ export default function Index() {
   //DATA
   const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS);
   const [selectedDates, setSelectedDates] = useState({} as DatesSelected);
-  const [destination, setDestination] = useState();
+  const [destination, setDestination] = useState("");
   const [btnState, setBtnState] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emails, setEmails] = useState<string[]>([]);
 
   //MODAL
   const [showModal, setShowModal] = useState(MODAL.NONE);
@@ -52,6 +57,41 @@ export default function Index() {
     });
 
     setSelectedDates(dates);
+
+    if (destination.trim().length < 4 || !dates.startsAt || !dates.endsAt)
+      setBtnState(false);
+    else setBtnState(true);
+  }
+
+  function changeDestination(e: string) {
+    setDestination(e);
+
+    if (e.trim().length < 4 || !selectedDates.startsAt || !selectedDates.endsAt)
+      setBtnState(false);
+    else setBtnState(true);
+  }
+
+  function handleRemoveEmail(emailRemove: string) {
+    setEmails((prevState) =>
+      prevState.filter((emailItem) => emailItem != emailRemove)
+    );
+  }
+
+  function handleAddEmail() {
+    if (!validateInput.email(email))
+      return Alert.alert("Guest", "Invalid email!");
+
+    if (emails.find((emailItem) => emailItem === email))
+      return Alert.alert("Guest", "Email already exist!");
+
+    setEmails((prevState) => [...prevState, email]);
+  }
+
+  async function saveTrip(id: string) {
+    try {
+    } catch (e) {
+      throw e;
+    }
   }
 
   return (
@@ -70,7 +110,9 @@ export default function Index() {
           <MapPin color={colors.zinc[400]} size={20} />
           <Input.Field
             placeholder="Where?"
+            value={destination}
             editable={stepForm === StepForm.TRIP_DETAILS}
+            onChangeText={(e) => changeDestination(e.toString())}
           />
         </Input>
         <Input>
@@ -100,12 +142,27 @@ export default function Index() {
 
             <Input>
               <UserRoundPlus color={colors.zinc[400]} size={20} />
-              <Input.Field placeholder="Who will be on the trip?" />
+              <Input.Field
+                placeholder="Who will be on the trip?"
+                autoCorrect={false}
+                value={
+                  emails.length > 0
+                    ? `${emails.length} ${
+                        emails.length === 1
+                          ? "pessoa convidada"
+                          : "pessoas convidadas"
+                      }`
+                    : ""
+                }
+                onFocus={() => Keyboard.dismiss()}
+                showSoftInputOnFocus={false}
+                onPressIn={() => setShowModal(MODAL.GUESTS)}
+              />
             </Input>
           </>
         )}
 
-        <Button onPress={handleNextStepForm}>
+        <Button onPress={handleNextStepForm} disabled={!btnState}>
           <Button.Title>
             {stepForm === StepForm.TRIP_DETAILS ? "Continue" : "Confirm Trip"}
           </Button.Title>
@@ -135,6 +192,47 @@ export default function Index() {
 
           <Button onPress={() => setShowModal(MODAL.NONE)}>
             <Button.Title>Confirm</Button.Title>
+          </Button>
+        </View>
+      </Modal>
+
+      <Modal
+        title="Select guests"
+        subtitle="Guests will receive emails to confirm their participation in the trip"
+        visible={showModal === MODAL.GUESTS}
+        onClose={() => setShowModal(MODAL.NONE)}
+      >
+        <View className="my-2 flex-wrap gap-2 border-b border-zinc-800 py-5 items-start">
+          {emails.length > 0 ? (
+            emails.map((emailItem) => (
+              <GuestEmail
+                key={emailItem}
+                email={emailItem}
+                onRemove={() => handleRemoveEmail(emailItem)}
+              />
+            ))
+          ) : (
+            <Text className="text-zinc-600 text-base font-regular">
+              No email added
+            </Text>
+          )}
+        </View>
+
+        <View className="gap-4 mt-4">
+          <Input variant="secondary">
+            <AtSign color={colors.zinc[400]} size={20} />
+            <Input.Field
+              placeholder="Enter the guest's email"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+              returnKeyType="send"
+              onSubmitEditing={handleAddEmail}
+            />
+          </Input>
+
+          <Button onPress={handleAddEmail}>
+            <Button.Title>Invite</Button.Title>
           </Button>
         </View>
       </Modal>

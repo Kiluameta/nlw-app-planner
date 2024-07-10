@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, Image, Keyboard, Alert } from "react-native";
 import {
   MapPin,
@@ -14,12 +14,16 @@ import dayjs from "dayjs";
 import { colors } from "@/styles/colors";
 import { calendarUtils, DatesSelected } from "@/utils/calendarUtils";
 import { validateInput } from "@/utils/validateInput";
+import { tripStorage } from "@/storage/trip";
 
 import { Input } from "@/components/input";
 import { Button } from "@/components/button";
 import { Modal } from "@/components/modal";
 import { Calendar } from "@/components/calendar";
 import { GuestEmail } from "@/components/email";
+import { router } from "expo-router";
+import { tripServer } from "@/server/trip-server";
+import Loading from "@/components/loading";
 
 enum StepForm {
   TRIP_DETAILS = 1,
@@ -33,6 +37,10 @@ enum MODAL {
 }
 
 export default function Index() {
+  //LOADING
+  const [isCreatingTrip, setIsCreatingTrip] = useState(false);
+  const [isGettingTrip, setIsGettingTrip] = useState(true);
+
   //DATA
   const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS);
   const [selectedDates, setSelectedDates] = useState({} as DatesSelected);
@@ -47,6 +55,17 @@ export default function Index() {
   function handleNextStepForm() {
     if (stepForm === StepForm.TRIP_DETAILS)
       return setStepForm(StepForm.ADD_EMAIL);
+
+    Alert.alert("New trip", "Confirm trip?", [
+      {
+        text: "No",
+        style: "cancel",
+      },
+      {
+        text: "Yes",
+        onPress: createTrip,
+      },
+    ]);
   }
 
   function handleSelectDate(selectedDay: DateData) {
@@ -89,10 +108,51 @@ export default function Index() {
 
   async function saveTrip(id: string) {
     try {
+      await tripStorage.save(id);
+      router.navigate(`/trip/${id}`);
     } catch (e) {
-      throw e;
+      Alert.alert("Trip", "Device out of space");
+      console.log(e);
     }
   }
+
+  async function createTrip() {
+    try {
+      setIsCreatingTrip(true);
+      const newTrip = await tripServer.create({
+        destination,
+        starts_at: dayjs(selectedDates.startsAt?.dateString).toString(),
+        ends_at: dayjs(selectedDates.endsAt?.dateString).toString(),
+        emails_to_invite: emails,
+      });
+
+      Alert.alert("New trip", "Trip booked successfully!", [
+        { text: "Ok", onPress: () => saveTrip(newTrip) },
+      ]);
+    } catch (e) {
+      console.log(e);
+      setIsCreatingTrip(false);
+    }
+  }
+
+  async function getTrip() {
+    try {
+      const tripId = await tripStorage.get();
+      if (!tripId) return setIsGettingTrip(false);
+
+      const trip = await tripServer.getByID(tripId);
+      if (trip) return router.navigate(`/trip/${tripId}`);
+    } catch (e) {
+      setIsGettingTrip(false);
+      console.log(e);
+    }
+  }
+
+  useEffect(() => {
+    getTrip();
+  }, []);
+
+  if (isGettingTrip) return <Loading />;
 
   return (
     <View className="flex-1 items-center justify-center px-5">
@@ -162,7 +222,11 @@ export default function Index() {
           </>
         )}
 
-        <Button onPress={handleNextStepForm} disabled={!btnState}>
+        <Button
+          onPress={handleNextStepForm}
+          disabled={!btnState}
+          isLoading={isCreatingTrip}
+        >
           <Button.Title>
             {stepForm === StepForm.TRIP_DETAILS ? "Continue" : "Confirm Trip"}
           </Button.Title>

@@ -14,6 +14,7 @@ type TripCreate = Omit<TripDetails, "id" | "is_confirmed"> & {
 
 const routes = {
   getByID: (id: string) => `/trips/${id}`,
+  update: (id: string) => `/trips/${id}`,
 };
 
 async function getByID(id: string) {
@@ -47,4 +48,21 @@ async function create({
   }
 }
 
-export const tripServer = { getByID, create };
+async function update({
+  id,
+  destination,
+  starts_at,
+  ends_at,
+}: Omit<TripDetails, "is_confirmed">) {
+  try {
+    await api.put(routes.update(id), {
+      destination,
+      starts_at,
+      ends_at,
+    });
+  } catch (e) {
+    throw e;
+  }
+}
+
+export const tripServer = { getByID, create, update };

@@ -94,7 +94,7 @@ export default function Trip() {
     // else setBtnState(true);
   }
 
-  async function handleUpdateTrip(params: type) {
+  async function handleUpdateTrip() {
     try {
       if (!tripId) return;
 

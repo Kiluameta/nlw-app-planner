@@ -1,4 +1,5 @@
-import { View, Text, Image } from "react-native";
+import { useState } from "react";
+import { View, Text, Image, Keyboard } from "react-native";
 import {
   MapPin,
   Calendar as IconCalendar,
@@ -6,23 +7,51 @@ import {
   UserRoundPlus,
   ArrowRight,
 } from "lucide-react-native";
+import { DateData } from "react-native-calendars";
+
+import { colors } from "@/styles/colors";
+import { calendarUtils, DatesSelected } from "@/utils/calendarUtils";
 
 import { Input } from "@/components/input";
-import { colors } from "@/styles/colors";
 import { Button } from "@/components/button";
-import { useState } from "react";
+import { Modal } from "@/components/modal";
+import { Calendar } from "@/components/calendar";
+import dayjs from "dayjs";
 
 enum StepForm {
   TRIP_DETAILS = 1,
   ADD_EMAIL = 2,
 }
 
+enum MODAL {
+  NONE = 0,
+  CALENDAR = 1,
+  GUESTS = 2,
+}
+
 export default function Index() {
+  //DATA
   const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS);
+  const [selectedDates, setSelectedDates] = useState({} as DatesSelected);
+  const [destination, setDestination] = useState();
+  const [btnState, setBtnState] = useState(false);
+
+  //MODAL
+  const [showModal, setShowModal] = useState(MODAL.NONE);
 
   function handleNextStepForm() {
     if (stepForm === StepForm.TRIP_DETAILS)
       return setStepForm(StepForm.ADD_EMAIL);
+  }
+
+  function handleSelectDate(selectedDay: DateData) {
+    const dates = calendarUtils.orderStartsAtAndEndsAt({
+      startsAt: selectedDates.startsAt,
+      endsAt: selectedDates.endsAt,
+      selectedDay,
+    });
+
+    setSelectedDates(dates);
   }
 
   return (
@@ -48,7 +77,13 @@ export default function Index() {
           <IconCalendar color={colors.zinc[400]} size={20} />
           <Input.Field
             placeholder="When?"
+            value={selectedDates.formatDatesInText}
             editable={stepForm === StepForm.TRIP_DETAILS}
+            onFocus={() => Keyboard.dismiss()}
+            showSoftInputOnFocus={false}
+            onPressIn={() =>
+              stepForm === StepForm.TRIP_DETAILS && setShowModal(MODAL.CALENDAR)
+            }
           />
         </Input>
         {stepForm === StepForm.ADD_EMAIL && (
@@ -84,6 +119,25 @@ export default function Index() {
           terms of use and privacy policies.
         </Text>
       </Text>
+
+      <Modal
+        title="Select dates"
+        subtitle="Select a departure and return date"
+        visible={showModal === MODAL.CALENDAR}
+        onClose={() => setShowModal(MODAL.NONE)}
+      >
+        <View className="gap-4 mt-4">
+          <Calendar
+            minDate={dayjs().toISOString()}
+            onDayPress={handleSelectDate}
+            markedDates={selectedDates.dates}
+          />
+
+          <Button onPress={() => setShowModal(MODAL.NONE)}>
+            <Button.Title>Confirm</Button.Title>
+          </Button>
+        </View>
+      </Modal>
     </View>
   );
 }

@@ -21,6 +21,7 @@ const ThemeContext = createContext<{ variant?: Variants }>({});
 function Button({
   isLoading = false,
   variant = "primary",
+  disabled,
   children,
   ...rest
 }: ButtonProps) {
@@ -28,10 +29,11 @@ function Button({
     <TouchableOpacity
       className={clsx(
         "w-full h-11 flex-row rounded-lg items-center justify-center gap-2 bg-lime-300",
-        { "bg-zinc-800": variant === "secondary" }
+        { "bg-zinc-800": variant === "secondary" },
+        { "opacity-60": disabled }
       )}
       activeOpacity={0.7}
-      disabled={isLoading}
+      disabled={isLoading || disabled}
       {...rest}
     >
       <ThemeContext.Provider value={{ variant }}>

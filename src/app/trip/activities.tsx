@@ -77,7 +77,7 @@ export function Activities({ tripDetails }: Props) {
         title: activityTitle,
       });
 
-      Alert.alert("Nova Atividade", "Nova atividade cadastrada com sucesso!");
+      Alert.alert("New Activity", "New activity registered successfully!");
 
       await getTripActivities();
       resetNewActivityFields();
@@ -213,13 +213,13 @@ export function Activities({ tripDetails }: Props) {
           onPress={handleCreateTripActivity}
           isLoading={isCreatingActivity}
         >
-          <Button.Title>Salvar atividade</Button.Title>
+          <Button.Title>Save activity</Button.Title>
         </Button>
       </Modal>
 
       <Modal
-        title="Selecionar data"
-        subtitle="Selecione a data da atividade"
+        title="Select date"
+        subtitle="Select the date of the activity"
         visible={showModal === MODAL.CALENDAR}
         onClose={() => setShowModal(MODAL.NONE)}
       >
@@ -233,7 +233,7 @@ export function Activities({ tripDetails }: Props) {
           />
 
           <Button onPress={() => setShowModal(MODAL.NEW_ACTIVITY)}>
-            <Button.Title>Confirmar</Button.Title>
+            <Button.Title>Confirm</Button.Title>
           </Button>
         </View>
       </Modal>

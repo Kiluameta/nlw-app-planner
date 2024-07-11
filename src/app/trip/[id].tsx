@@ -68,11 +68,11 @@ export default function Trip() {
       const monthEn = dayjs(trip.ends_at).format("MMM");
       const dateBetween =
         monthSt === monthEn
-          ? `${starts_at} a ${ends_at} de ${monthSt}`
-          : `${starts_at} de ${monthSt} a ${ends_at} de ${monthSt}`;
+          ? `${starts_at} to ${ends_at} from ${monthSt}`
+          : `${starts_at} from ${monthSt} to ${ends_at} from ${monthSt}`;
 
       setDestination(trip.destination);
-      setTripDetails({ ...trip, when: `${destination} de ${dateBetween}.` });
+      setTripDetails({ ...trip, when: `${destination} from ${dateBetween}.` });
     } catch (e) {
       console.log(e);
     } finally {
@@ -166,7 +166,7 @@ export default function Trip() {
               }
               size={20}
             />
-            <Button.Title>Atividades</Button.Title>
+            <Button.Title>Activities</Button.Title>
           </Button>
 
           <Button
@@ -178,7 +178,7 @@ export default function Trip() {
               color={option === "details" ? colors.lime[950] : colors.zinc[400]}
               size={20}
             />
-            <Button.Title>Detalhes</Button.Title>
+            <Button.Title>Details</Button.Title>
           </Button>
         </View>
       </View>

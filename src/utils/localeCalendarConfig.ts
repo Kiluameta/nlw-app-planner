@@ -28,16 +28,16 @@ const ptBR = {
     "Dez",
   ],
   dayNames: [
-    "Domingo",
-    "Segunda",
-    "Terça",
-    "Quarta",
-    "Quinta",
-    "Sexta",
-    "Sábado",
+    "Sunday",
+    "Second",
+    "Third",
+    "Fourth",
+    "Fifth",
+    "Friday",
+    "Saturday",
   ],
   dayNamesShort: ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"],
   today: "Hoje",
-}
+};
 
-export { ptBR }
+export { ptBR };

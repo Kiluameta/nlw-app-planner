@@ -26,7 +26,7 @@ function Input({
   return (
     <View
       className={clsx(
-        "w-full h-16 flex-row gap-2 items-center",
+        "min-h-16 max-h-16 flex-row gap-2 items-center",
         {
           "h-14 px-4 rounded-lg border border-zinc-800": variant != "primary",
           "bg-zinc-950": variant === "secondary",

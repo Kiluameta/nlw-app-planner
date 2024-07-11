@@ -54,7 +54,6 @@ export default function Trip() {
     try {
       setIsLoadingTrip(true);
       if (!tripId) return router.back();
-
       const trip = await tripServer.getByID(tripId);
 
       const maxLengthDestination = 10;
@@ -75,8 +74,9 @@ export default function Trip() {
       setDestination(trip.destination);
       setTripDetails({ ...trip, when: `${destination} de ${dateBetween}.` });
     } catch (e) {
-      setIsLoadingTrip(false);
       console.log(e);
+    } finally {
+      setIsLoadingTrip(false);
     }
   }
 
@@ -154,7 +154,7 @@ export default function Trip() {
       )}
 
       <View className="w-full absolute -bottom-1 self-center justify-end pb-5 z-10 bg-zinc-950">
-        <View className="w-full flex-row bg-zinc-900 border border-zinc-800 p-4 gap-2 rounded-lg">
+        <View className="w-full flex-row bg-zinc-900 p-4 rounded-lg border border-zinc-800 gap-2">
           <Button
             className="flex-1"
             onPress={() => setOption("activity")}
@@ -168,6 +168,7 @@ export default function Trip() {
             />
             <Button.Title>Atividades</Button.Title>
           </Button>
+
           <Button
             className="flex-1"
             onPress={() => setOption("details")}
